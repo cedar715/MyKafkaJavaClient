@@ -1,0 +1,70 @@
+convention:
+# public keys are with extn .crt
+# private keys are with the extn .key
+---
+# Create your own CA - generate CA's private key and public cert (this pub key will be imported to trust store, browser)
+$ openssl req -new -newkey rsa:4096 -days 365 -x509 -subj "/CN=kafka-security-ca" -keyout ca.key -out ca.crt -nodes
+---
+# Generate a private key and store it in keystore. O/p =  kafka-broker.keystore.jks
+$ export PASSWD=changeit
+$ keytool -genkey \
+          -keystore kafka-broker.keystore.jks \
+          -validity 365 \
+          -storepass $PASSWD \
+          -keypass $PASSWD \
+          -dname "CN=kafka-broker" \
+          -storetype pkcs12
+---
+# Generate CSR; O/p = kafka-broker.csr
+$ keytool -keystore kafka-broker.keystore.jks \
+          -storepass $PASSWD \
+          -certreq \
+          -file kafka-broker.csr \
+          -keypass $PASSWD
+---
+# Sign the CSR; O/p = kafka-broker.crt, ca.srl
+$ openssl x509 -req \
+          -CA ca.crt \
+          -CAkey ca.key \
+          -in kafka-broker.csr \
+          -out kafka-broker.crt \
+          -days 365 \
+          -CAcreateserial \
+          -passin pass:$PASSWD
+---
+# Import Kafka-broker's public cert into keystore
+❯ keytool -keystore kafka-broker.keystore.jks \
+∙           -alias localhost \
+∙           -import \
+∙           -file kafka-broker.crt \
+∙           -storepass $PASSWD \
+∙           -keypass $PASSWD \
+∙           -noprompt
+Certificate was added to keystore
+
+# To view the certs in keystore:
+❯ keytool -list -v -keystore kafka-broker.keystore.jks -storepass $PASSWD
+Keystore type: PKCS12
+Keystore provider: SUN
+
+Your keystore contains 2 entries
+---
+# Create Kafka's truststore and add the CA's public key
+$ keytool -keystore kafka-broker.truststore.jks \
+          -alias CARoot \
+          -import \
+          -file ca.crt \
+          -storepass $PASSWD \
+          -keypass $PASSWD \
+          -noprompt
+---
+# To view the certs in truststore:
+$ keytool -list -v -keystore kafka-broker.truststore.jks -storepass $PASSWD
+Keystore type: PKCS12
+Keystore provider: SUN
+
+Your keystore contains 1 entry
+
+Alias name: caroot
+---
+
