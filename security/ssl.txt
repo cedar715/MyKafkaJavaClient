@@ -2,6 +2,8 @@ convention:
 # public keys are with extn .crt
 # private keys are with the extn .key
 ---
+$ export PASSWD=changeit
+---
 # Create your own CA - generate CA's private key and public cert (this pub key will be imported to trust store, browser)
 $ openssl req -new -newkey rsa:4096 -days 365 -x509 -subj "/CN=kafka-security-ca" -keyout ca.key -out ca.crt -nodes
 ---
@@ -40,6 +42,16 @@ $ openssl x509 -req \
 ∙           -storepass $PASSWD \
 ∙           -keypass $PASSWD \
 ∙           -noprompt
+Certificate was added to keystore
+---
+# Import CA's public cert into keystore
+❯ keytool -keystore kafka-broker.keystore.jks \
+            -alias CARoot \
+            -import \
+            -file ca.crt \
+            -storepass $PASSWD \
+            -keypass $PASSWD \
+            -noprompt
 Certificate was added to keystore
 
 # To view the certs in keystore:
