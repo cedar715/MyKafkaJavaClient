@@ -1,0 +1,19 @@
+https://docs.confluent.io/operator/2.0.4/co-deploy-cfk.html
+
+curl -O https://confluent-for-kubernetes.s3-us-west-1.amazonaws.com/confluent-for-kubernetes-2.0.4.tar.gz
+
+From the helm sub-directory of where you downloaded the CFK bundle, install CFK:
+helm upgrade --install confluent-operator \
+  ./confluent-for-kubernetes \
+  --namespace confluent
+
+openssl genrsa -out ca-key.pem 2048
+
+openssl req -new -key ca-key.pem -x509 \
+  -days 1000 \
+  -out ca.pem \
+  -subj "/C=IN/ST=KA/L=Bangalore/O=Confluent/OU=Operator/CN=TestCFK"
+
+kubectl create secret tls ca-pair-sslcerts \
+  --cert=ca.pem \
+  --key=ca-key.pem

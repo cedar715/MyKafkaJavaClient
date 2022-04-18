@@ -1,0 +1,29 @@
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |v|
+    v.memory = 2048
+    v.cpus = 1
+  end
+
+  config.vm.define :master do |master|
+    master.vm.box = "learnk8s/architecture"
+    master.vm.box_version = "7.0.1"
+    master.vm.hostname = "master"
+    master.vm.network :private_network, ip: "192.168.56.10"
+    master.vm.provider :virtualbox do |vb|
+      vb.cpus = 2
+      vb.memory = 4096
+    end
+    master.vm.provision :shell, privileged: true, inline: "sed -i 's/127.0.2.1/192.168.56.10/g' /etc/hosts"
+  end
+
+  %w{worker1 worker2}.each_with_index do |name, i|
+    config.vm.define name do |worker|
+      worker.vm.box = "learnk8s/architecture"
+      worker.vm.box_version = "7.0.1"
+      worker.vm.hostname = name
+      worker.vm.network :private_network, ip: "192.168.56.#{i + 11}"
+      worker.vm.provision :shell, privileged: true, inline: "sed -i 's/127.0.2.1/192.168.56.#{i + 11}/g' /etc/hosts"
+    end
+  end
+
+end

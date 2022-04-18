@@ -46,7 +46,7 @@ chmod 777 /vagrant/data/volumes/w2pv3
 mkdir -p /vagrant/data/volumes/w2pv4
 chmod 777 /vagrant/data/volumes/w2pv4
 
-Create PersistentVolume with a reference to local-storage StorageClass: 01-pvs.yaml
+#Create PersistentVolume with a reference to local-storage StorageClass: 01-pvs.yaml
 
 CLeanup:
 rm -rf /vagrant/data/volumes/mpv1
