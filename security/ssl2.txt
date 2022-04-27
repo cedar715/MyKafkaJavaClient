@@ -21,4 +21,14 @@ openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days
 keytool -keystore kafka.server.keystore.jks -alias CARoot -import -file ca-cert
 keytool -keystore kafka.server.keystore.jks -alias localhost -import -file cert-signed
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Value of ssl.certificate.location(certificate.pem)
+# keytool -exportcert -alias kafkaclient -keystore kafka.client.keystore.jks -rfc -file certificate.pem
+
+Value of ssl.key.location(key.pem)
+# keytool -v -importkeystore -srckeystore kafka.client.keystore.jks -srcalias kafkaclient -destkeystore cert_and_key.p12 -deststoretype PKCS12
+# openssl pkcs12 -in cert_and_key.p12 -nocerts -nodes -out key.pem
+
+Value of ssl.ca.location(CARoot.pem)
+# keytool -exportcert -alias CARoot -keystore kafka.client.keystore.jks -rfc -file CARoot.pem

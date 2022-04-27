@@ -3,16 +3,67 @@ https://docs.confluent.io/operator/2.0.4/co-deploy-cfk.html
 curl -O https://confluent-for-kubernetes.s3-us-west-1.amazonaws.com/confluent-for-kubernetes-2.0.4.tar.gz
 
 From the helm sub-directory of where you downloaded the CFK bundle, install CFK:
+
 helm upgrade --install confluent-operator \
   ./confluent-for-kubernetes \
   --namespace confluent
+
+Result:
+❯ helm ls
+NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                                   APP VERSION
+confluent-operator      confluent       1               2022-04-26 14:38:18.935373763 +0000 UTC deployed        confluent-for-kubernetes-0.174.34       2.0.4
+
+❯ kc get po
+NAME                                  READY   STATUS    RESTARTS   AGE
+confluent-operator-769c7ffdfb-5v8cc   1/1     Running   0          33s
+
+❯ kc get secrets
+NAME                                       TYPE                                  DATA   AGE
+confluent-for-kubernetes-token-zv52w       kubernetes.io/service-account-token   3      39s
+confluent-operator-licensing               Opaque                                1      39s
+default-token-4bmqz                        kubernetes.io/service-account-token   3      4m50s
+sh.helm.release.v1.confluent-operator.v1   helm.sh/release.v1                    1      39s
+
+❯ kc describe secret confluent-operator-licensing
+Name:         confluent-operator-licensing
+Namespace:    confluent
+Labels:       app=confluent-for-kubernetes
+              app.kubernetes.io/component=confluent-operator
+              app.kubernetes.io/instance=confluent-operator
+              app.kubernetes.io/managed-by=Helm
+              app.kubernetes.io/name=confluent-for-kubernetes
+              helm.sh/chart=confluent-for-kubernetes-0.174.34
+Annotations:  meta.helm.sh/release-name: confluent-operator
+              meta.helm.sh/release-namespace: confluent
+
+Type:  Opaque
+
+Data
+====
+publicKey.pem:  450 bytes
+
+vagrant in jumpbox in on ⛵ kubernetes-admin on kubernetes in kubernetes-admin@kubernetes (confluent) confluent-for-kubernetes-2.0.4-20220120/helm/confluent-for-kubernetes is 📦 v0.174.34 via ⎈ v3.8.1
+❯ kc get secret confluent-operator-licensing -ojsonpath='{.data.publicKey\.pem}' | base64 -d
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvaGy8TOdbCMySM7zqZsx
+n62yuE+BhIPlc9z9ctrX+tBWNCCJePZbKHTZS9uKLeKUi9u07ts/35XRnE4ATD6q
+lwjnSoJOkeIXcYiJ+XGExN1oRE8Rl5otvdmJEsb9Y6Jsfe2lRCCsZNx6k1s1NmQF
+R4wnRiKylIiYJ9uWUGfH18JKZqM8z9QqkZ/+zQkzHNYsXn/YyRuDIQXeUSechr93
+Jjt79AikskicoT04lqz/GaHz2WJEyuvLLE1jNBOComKl05Qb+yvJmGnt/7HX6HT7
+3hnCXbslwtzp0CmeGOiJRbJxbahkTFqh1oKqZXUDCZrKCNNRvXqN/QHqnawo6kJy
+8wIDAQAB
+-----END PUBLIC KEY-----
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Provide CA to Operator by creating secret with the name ca-pair-sslcerts
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 openssl genrsa -out ca-key.pem 2048
 
 openssl req -new -key ca-key.pem -x509 \
   -days 1000 \
   -out ca.pem \
-  -subj "/C=IN/ST=KA/L=Bangalore/O=Confluent/OU=Operator/CN=TestCFK"
+  -subj "/C=IN/ST=KA/L=Bangalore/O=Confluent/OU=Operator/CN=JTestCFK"
 
 kubectl create secret tls ca-pair-sslcerts \
   --cert=ca.pem \
