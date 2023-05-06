@@ -59,3 +59,4 @@ rm -rf /vagrant/data/volumes/w2pv1
 rm -rf /vagrant/data/volumes/w2pv2
 rm -rf /vagrant/data/volumes/w2pv3
 rm -rf /vagrant/data/volumes/w2pv4
+rm -rf /vagrant/data/volumes/w2pv4

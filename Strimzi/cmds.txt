@@ -1,0 +1,22 @@
+kubectl -n strimzi-kafka run kafka-producer -ti \
+  --image=quay.io/strimzi/kafka:0.34.0-kafka-3.4.0 \
+  --rm=true --restart=Never -- bin/kafka-console-producer.sh \
+  --bootstrap-server my-cluster-kafka-bootstrap:9092 --topic my-topic
+
+kubectl -n strimzi-kafka run kafka-consumer -ti \
+  --image=quay.io/strimzi/kafka:0.34.0-kafka-3.4.0 --rm=true --restart=Never \
+  -- bin/kafka-console-consumer.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 \
+  --topic my-topic --from-beginning
+
+kubectl -n strimzi-kafka run kafka-producer -ti \
+  --image=quay.io/strimzi/kafka:0.34.0-kafka-3.4.0 --rm=true --restart=Never -- sh
+
+# CREATE TOPIC
+export CMD=bin/kafka-topics.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --create --replication-factor 3 --partitions 1 --topic my-topic
+# LIST TOPIC
+kafka-topics.sh --list --bootstrap-server my-cluster-kafka-bootstrap:9092
+
+kubectl -n strimzi-kafka run kafka-client -ti \
+  --image=quay.io/strimzi/kafka:0.34.0-kafka-3.4.0 \
+  --rm=true --restart=Never -- bin/kafka-topics.sh --bootstrap-server my-cluster-kafka-bootstrap:9092 --create --replication-factor 3 --partitions 1 --topic my-topic
+
